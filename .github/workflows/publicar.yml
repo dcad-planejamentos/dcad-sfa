@@ -1,0 +1,31 @@
+name: Publicar na Netlify
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: publicar
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Montar e publicar
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then echo "::error::Falta o segredo NETLIFY_AUTH_TOKEN no repositório (Settings > Secrets and variables > Actions)."; exit 1; fi
+          if [ -z "$NETLIFY_SITE_ID" ]; then echo "::error::Falta a variável NETLIFY_SITE_ID no repositório (Settings > Secrets and variables > Actions > Variables)."; exit 1; fi
+          npx --yes netlify-cli@27.10.2 deploy --build --prod --site "$NETLIFY_SITE_ID" --message "Commit ${GITHUB_SHA::7}" 2>&1 | tee deploy.log; st=${PIPESTATUS[0]}
+          if [ "$st" != "0" ]; then echo "::error::$(grep -iE 'error|failed' deploy.log | tail -5 | tr '\n' ' ' | cut -c1-900)"; exit $st; fi

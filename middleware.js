@@ -1,0 +1,27 @@
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+
+const PUBLICAS = ['/login'];
+
+export async function middleware(req) {
+  let res = NextResponse.next({ request: req });
+  const sb = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll: () => req.cookies.getAll(),
+      setAll: (list) => {
+        list.forEach(({ name, value }) => req.cookies.set(name, value));
+        res = NextResponse.next({ request: req });
+        list.forEach(({ name, value, options }) => res.cookies.set(name, value, options));
+      }
+    }
+  });
+  const { data: { user } } = await sb.auth.getUser();
+  const p = req.nextUrl.pathname;
+  if (!user && !PUBLICAS.includes(p)) {
+    const u = req.nextUrl.clone(); u.pathname = '/login'; u.search = ''; return NextResponse.redirect(u);
+  }
+  if (user && p === '/login') { const u = req.nextUrl.clone(); u.pathname = '/'; u.search = ''; return NextResponse.redirect(u); }
+  return res;
+}
+
+export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest).*)'] };
