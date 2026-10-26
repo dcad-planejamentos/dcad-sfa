@@ -5,7 +5,10 @@ import { dt } from '@/lib/fmt';
 
 const ORIG = { painel: ['Painel', 'c-info'], vigia: ['Vigia', 'c-ok'], telegram: ['Telegram', 'c-warn'], sistema: ['Sistema', 'c-mut'] };
 const ENT = { plataformas: 'Plataforma', baixas: 'Baixa', perfis: 'Perfil', regras_montagem: 'Regra', versoes_config: 'Versão', resinas: 'Resina',
-  precos_resina: 'Preço', catalogo_resinas: 'Catálogo', impressoras: 'Impressora', usuarios: 'Usuário', itens_plataforma: 'Peça', config_sistema: 'Configuração', chaves_vigia: 'Chave do vigia' };
+  precos_resina: 'Preço', catalogo_resinas: 'Catálogo', impressoras: 'Impressora', usuarios: 'Usuário', itens_plataforma: 'Peça', config_sistema: 'Configuração', chaves_vigia: 'Chave do vigia',
+  convites: 'Convite de acesso', tipos_trabalho: 'Tipo de trabalho', catalogo_impressoras: 'Catálogo de impressoras', casos: 'Caso', arquivos_stl: 'Arquivo STL' };
+const ACAO = { insert: 'Criado', update: 'Alterado', delete: 'Removido' };
+const acao = a => ACAO[String(a || '').toLowerCase()] || a;
 const POR = 50;
 
 function Mudancas({ antes, depois }) {
@@ -45,7 +48,7 @@ export default function Log() {
           <li key={l.id} style={{ borderTop: '1px solid var(--line)', padding: '12px 16px' }}>
             <div className="row" style={{ alignItems: 'flex-start' }}>
               <div className="sp" style={{ minWidth: 0 }}>
-                <b style={{ fontSize: 13.5 }}>{l.acao}</b> <span className="muted" style={{ fontSize: 12.5 }}>· {ENT[l.entidade] || l.entidade || ''}</span>
+                <b style={{ fontSize: 13.5 }}>{acao(l.acao)}</b> <span className="muted" style={{ fontSize: 12.5 }}>· {ENT[l.entidade] || l.entidade || ''}</span>
                 {l.detalhe && <div style={{ fontSize: 13, overflowWrap: 'anywhere' }}>{l.detalhe}</div>}
                 <div className="muted" style={{ fontSize: 12 }}>{dt(l.quando)} · {l.usuario_id ? nome(l.usuario_id) : ol}</div>
               </div>
